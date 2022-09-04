@@ -31,7 +31,7 @@ export const storage = {
       return localStorage.getItem(keys.defaultLanguageKey);
     },
     set(lang: string) {
-      localStorage.setItem(keys.defaultLanguageKey, lang);
+      //localStorage.setItem(keys.defaultLanguageKey, lang);
     }
   }
 }
