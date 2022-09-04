@@ -18,7 +18,6 @@ import { ManyExplosions } from './fx-many-explosions';
 import { menuSceneKey } from './menu-scene';
 import { addText } from './utils';
 import { ImageButton } from './image-button';
-import { GameAnalytics, EGAProgressionStatus } from 'gameanalytics';
 import { TimerBar } from './fx-timer-bar';
 import { Planet } from './fx-planet';
 import { medalTimeSeconds } from './scoring';

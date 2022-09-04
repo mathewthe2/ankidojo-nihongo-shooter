@@ -30,9 +30,9 @@ export const storage = {
     get(): string | null {
       return localStorage.getItem(keys.defaultLanguageKey);
     },
-    set(lang: string) {
-      //localStorage.setItem(keys.defaultLanguageKey, lang);
-    }
+    // set(lang: string) {
+    //   localStorage.setItem(keys.defaultLanguageKey, lang);
+    // }
   }
 }
 

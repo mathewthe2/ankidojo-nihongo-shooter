@@ -8,7 +8,7 @@ import { gameHeight, gameWidth } from "./config";
 import { LanguageSelectScene } from "./language-select-scene";
 import { GameModeSelectScene } from "./game-mode-select-scene";
 import { migrateStorage1, storage } from "./storage";
-import { GameAnalytics } from "gameanalytics";
+// import { GameAnalytics } from "gameanalytics";
 import { AnkiMenuScene } from "./anki-menu-scene";
 import { AnkiGameScene } from "./anki-game-scene";
 
@@ -73,7 +73,7 @@ window.addEventListener("load", () => {
 
   // Skip the language selection scren if you already chose one
   const scenesList: typeof Phaser.Scene[] = [
-    // GameModeSelectScene,
+    GameModeSelectScene,
     AnkiMenuScene,
     LanguageSelectScene,
     MenuScene,

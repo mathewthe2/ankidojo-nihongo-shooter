@@ -4,7 +4,6 @@ import { addText } from "./utils";
 import { gameHeight, gameWidth } from "./config";
 import { AnswerButton } from "./answer-button";
 import { getDeckNames, getPrimaryDeck, getNotes } from "./anki";
-import { gameSceneKey, GameSceneProps } from "./game-scene";
 import { ankiGameSceneKey, AnkiGameSceneProps } from "./anki-game-scene";
 import AnkiNote from "./ankiNote";
 
