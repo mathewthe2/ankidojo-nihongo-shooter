@@ -36,3 +36,17 @@ export const getNotes = async(deckName: string) => {
 
 export const getDeckNames = async () => await fetchAnki('decks');
 export const getPrimaryDeck = async () => await fetchAnki('primary_deck');
+
+export enum FieldValueType {
+  Expression = "Expression",
+  Reading = "Reading",
+  Glossary = "Glossary",
+  GlossaryBrief = "Glossary Brief",
+  Audio = "Audio",
+  Sentence = "Sentence",
+  SentenceAudio = "Sentence Audio",
+  SentenceTranslation = "Sentence Translation",
+  Picture = "Picture",
+  PitchAccent = "Pitch Accent",
+  Frequencies = "Frequencies"
+}

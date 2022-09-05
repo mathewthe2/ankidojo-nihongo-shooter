@@ -1,14 +1,8 @@
-import japaneseWordsTxt from '../assets/words/japanese.txt?raw'
 import { shuffle } from './utils';
 import AnkiNote from './ankiNote';
-
-const languageWords = {
-  japanese: japaneseWordsTxt,
-};
+import { FieldValueType } from './anki';
 
 const removeAnchors = (s:string) => s.replace(new RegExp("<.*?>", "g"), "");
-
-export type LanguageType = keyof typeof languageWords;
 
 export interface Word {
   id: string;
@@ -23,18 +17,16 @@ function init(ankiNotes: AnkiNote[]) {
   // if (globalWords.length === 0) {
   //   globalWords = getWords();
   // }
-  // const wordsTxt = languageWords[language];
   globalWords = getWords(ankiNotes);
 }
 
 function getWords(ankiNotes: AnkiNote[]): Word[] {
-  // const lines = wordsTxt.split('\n');
   const wordObjects:Word[] = [];
   console.log("ankiNotes", ankiNotes)
   ankiNotes.forEach((ankiNote: AnkiNote)=>{
-    let kanji = ankiNote.fields.get('Expression');
-    let hiragana = ankiNote.fields.get('Reading');
-    let glossary = ankiNote.fields.get('Glossary Brief') || ankiNote.fields.get('Glossary');
+    let kanji = ankiNote.fields.get(FieldValueType.Expression);
+    let hiragana = ankiNote.fields.get(FieldValueType.Reading);
+    let glossary = ankiNote.fields.get(FieldValueType.GlossaryBrief) || ankiNote.fields.get(FieldValueType.Glossary);
     kanji = removeAnchors(kanji!);
     hiragana = removeAnchors(hiragana!)
     glossary = removeAnchors(glossary!)
@@ -48,21 +40,6 @@ function getWords(ankiNotes: AnkiNote[]): Word[] {
   });
   return wordObjects;
 }
-
-// function getWordsFromAnki(): Word[] {
-//   const wordObjects = [];
-//   const lines:string[] = [];
-//   for (const line of lines) {
-//     const [kanji, hiragana, english] = line.split(':');
-//     wordObjects.push({
-//       id: `${kanji}:${hiragana}`,
-//       english,
-//       kanji,
-//       hiragana,
-//     });
-//   }
-//   return wordObjects;
-// }
 
 // const maxLearningWordsAtOnce = 10;
 export const questionsAtOnce = 3;
