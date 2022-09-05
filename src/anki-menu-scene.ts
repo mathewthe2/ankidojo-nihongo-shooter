@@ -79,7 +79,6 @@ export class AnkiMenuScene extends Phaser.Scene {
 
   isReady(): boolean {
     return (
-      this.ankiNotes.length === this.deckSize &&
       this.deckSize >= MIN_QUESTION_NUMBER &&
       !this.isLoadingNotes
     );
@@ -108,7 +107,18 @@ export class AnkiMenuScene extends Phaser.Scene {
     getNotes(deckName, deckSize, EASE_OPTIONS[difficulty]).then((notes) => {
       this.ankiNotes = notes["data"];
       this.selectedDeckName = deckName;
-      this.deckSize = deckSize;
+      // console.log('deckSize', deckSize)
+      // console.log('length', this.ankiNotes.length)
+      if (this.ankiNotes.length < deckSize) {
+        for (let i = 0; i < QUESTION_NUMBER_OPTIONS.length-1; i++) {
+          if (QUESTION_NUMBER_OPTIONS[i+1] > this.ankiNotes.length) {
+            this.deckSize = QUESTION_NUMBER_OPTIONS[i];
+            break;
+          }
+        }
+      } else {
+        this.deckSize = deckSize;
+      }
       this.isLoadingNotes = false;
       if (onFinishedLoading) {
         onFinishedLoading();
@@ -156,6 +166,7 @@ export class AnkiMenuScene extends Phaser.Scene {
   }
 
   startGame(): void {
+    console.log("start", this.deckSize);
     this.sound.play("gasp");
     const sceneInfo: AnkiGameSceneProps = {
       showHint: this.isHintOn,

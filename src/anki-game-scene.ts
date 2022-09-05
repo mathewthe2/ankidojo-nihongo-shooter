@@ -148,7 +148,6 @@ export class AnkiGameScene extends Phaser.Scene {
     this.scoreText = addText(this, 0, 0, "HP: 100");
     this.scoreText.setFontSize((2.4 * gameHeight) / 100);
     this.scoreText.depth = 11;
-    console.log("deck size", this.deckSize);
     this.enemy.chooseEnemy(this.deckSize);
 
     this.updateWordButtons();
