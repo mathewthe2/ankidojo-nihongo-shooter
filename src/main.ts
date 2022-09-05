@@ -11,6 +11,7 @@ import { migrateStorage1, storage } from "./storage";
 // import { GameAnalytics } from "gameanalytics";
 import { AnkiMenuScene } from "./anki-menu-scene";
 import { AnkiGameScene } from "./anki-game-scene";
+import { AnkiDoneScene } from "./anki-done-scene";
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   title: "Nihongo Shooter",
@@ -80,6 +81,7 @@ window.addEventListener("load", () => {
     AnkiGameScene,
     GameScene,
     LevelDoneScene,
+    AnkiDoneScene
   ];
   const defaultLanguage = storage.defaultLanguage.get();
   if (defaultLanguage) {

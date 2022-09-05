@@ -21,6 +21,8 @@ export class AnkiMenuScene extends Phaser.Scene {
   private backButton = new ImageButton('back-button', backButtonUrl);
   private stuff: Stuff[] = [this.background, this.backButton];
   private deckNames: string[] = [];
+  private selectedDeckName: string = '';
+  private deckSize: number = 10;
   private ankiNotes: AnkiNote[] = [];
   private isLoadingNotes: boolean = true;
 
@@ -32,7 +34,6 @@ export class AnkiMenuScene extends Phaser.Scene {
 
   preload(): void {
     this.stuff.map((thing) => thing.preload(this));
-    this.load.html("dropdown", "select.html");
     getDeckNames().then((deckNames) => {
       this.deckNames = deckNames.sort();
       getPrimaryDeck().then((primaryDeck)=>{
@@ -40,6 +41,7 @@ export class AnkiMenuScene extends Phaser.Scene {
         this.createQuestionNumberSelect();
         getNotes(primaryDeck).then(notes=>{
           this.ankiNotes = notes['data'];
+          this.selectedDeckName = primaryDeck;
           this.isLoadingNotes = false;
         });
       });
@@ -49,7 +51,8 @@ export class AnkiMenuScene extends Phaser.Scene {
   loadNotes(event: Event): void {
     this.isLoadingNotes = true;
     getNotes((event.target as HTMLInputElement).value).then(notes=>{
-      this.ankiNotes = notes['data']
+      this.ankiNotes = notes['data'];
+      this.selectedDeckName = (event.target as HTMLInputElement).value;
       this.isLoadingNotes = false;
     });
   }
@@ -114,9 +117,10 @@ export class AnkiMenuScene extends Phaser.Scene {
       //   deckName: '',
       // };
       const sceneInfo: AnkiGameSceneProps = {
-        level: 1,
         showHint: false,
-        ankiNotes: this.ankiNotes
+        ankiNotes: this.ankiNotes,
+        deckName: this.selectedDeckName,
+        deckSize: this.deckSize
       };
       if (!this.isLoadingNotes) {
         this.scene.start(ankiGameSceneKey, sceneInfo);

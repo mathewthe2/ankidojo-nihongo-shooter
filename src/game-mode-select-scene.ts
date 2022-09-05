@@ -31,7 +31,7 @@ export class GameModeSelectScene extends Phaser.Scene {
       this,
       gameWidth / 2,
       gameHeight / 20,
-      "Nihongo Shooter"
+      "Nihongo Shooter+"
     );
     title.setFontSize(0.05 * gameHeight);
     title.setAlign("center");

@@ -4,18 +4,15 @@ import backButtonUrl from '../assets/back.png';
 import shipThrustUrl from '../assets/ship-01-thrust.png';
 import gaspUrl from '../assets/gasp.mp3';
 import { AnswerButton } from './answer-button';
-// import { LanguageType, WordGame } from './words';
 import { AnkiWordGame } from './anki-words';
 import { Rays } from './rays';
 import { Explosion } from './fx-explosion';
 import { Background } from './fx-background';
 import { Stuff } from './stuff';
-import { LevelDoneData, levelDoneSceneKey } from './level-done-scene';
 import { gameHeight, gameWidth } from './config';
 import { HealthBar } from './fx-hp-bar';
 import { Enemy } from './fx-enemy';
 import { ManyExplosions } from './fx-many-explosions';
-import { menuSceneKey } from './menu-scene';
 import { addText } from './utils';
 import { ImageButton } from './image-button';
 import { TimerBar } from './fx-timer-bar';
@@ -23,13 +20,15 @@ import { Planet } from './fx-planet';
 import { medalTimeSeconds } from './scoring';
 import AnkiNote from './ankiNote';
 import { ankiMenuSceneKey } from './anki-menu-scene';
+import { AnkiDoneData, ankiDoneSceneKey } from './anki-done-scene';
 
 export const ankiGameSceneKey = 'AnkiGameScene';
 
 export interface AnkiGameSceneProps {
-  level: number,
   showHint: boolean,
   ankiNotes: AnkiNote[]
+  deckName: string,
+  deckSize: number
 }
 
 const { LEFT, RIGHT, UP, ONE, TWO, THREE } = Phaser.Input.Keyboard.KeyCodes;
@@ -44,7 +43,6 @@ const keyCodes = {
 type KeysType = { [name in keyof typeof keyCodes]: Phaser.Input.Keyboard.Key };
 
 export class AnkiGameScene extends Phaser.Scene {
-  private level!: number;
   private startTime!: number;
   private showHint!: boolean;
 
@@ -76,7 +74,8 @@ export class AnkiGameScene extends Phaser.Scene {
   private isGameOver = false;
   private keys!: KeysType;
   private ankiNotes!: AnkiNote[];
-  // private language!: LanguageType;
+  private deckName!: string;
+  private deckSize!: number;
 
   constructor() {
     super({
@@ -85,27 +84,20 @@ export class AnkiGameScene extends Phaser.Scene {
   }
 
   init(props: AnkiGameSceneProps) {
-    this.level = props.level;
-    if (!props.level) {
-      this.level = 1;
-    }
     this.showHint = props.showHint;
     if (props.showHint === undefined) {
       this.showHint = true;
     }
     this.ankiNotes = props.ankiNotes;
-    // this.language = props.language;
-    // if (!props.language) {
-    //   this.language = "japanese";
-    // }
+    this.deckName = props.deckName;
+    this.deckSize = props.deckSize;
     this.startTime = Date.now();
   }
 
   preload(): void {
-    console.log('preload level', this.level);
     this.stuff.map(thing => thing.preload(this));
 
-    this.wordsGame = new AnkiWordGame(this.ankiNotes, this.level);
+    this.wordsGame = new AnkiWordGame(this.ankiNotes, this.deckSize);
     this.buttons = [];
     this.isGameOver = false;
 
@@ -156,7 +148,8 @@ export class AnkiGameScene extends Phaser.Scene {
     this.scoreText = addText(this, 0, 0, 'HP: 100');
     this.scoreText.setFontSize((2.4 * gameHeight / 100));
     this.scoreText.depth = 11;
-    this.enemy.chooseEnemy(this.level);
+    console.log("deck size", this.deckSize)
+    this.enemy.chooseEnemy(this.deckSize);
 
     this.updateWordButtons();
 
@@ -248,12 +241,12 @@ export class AnkiGameScene extends Phaser.Scene {
       this.isGameOver = true;
       const endTime = Date.now();
       const durationSeconds = (endTime - this.startTime) / 1000.0;
-      const data: LevelDoneData = {
+      const data: AnkiDoneData = {
         duration: durationSeconds,
         mistakes: this.wordsGame.mistakes,
         corrects: this.wordsGame.corrects,
-        level: this.level,
-        language: 'japanese',
+        deckName: this.deckName,
+        deckSize: this.deckSize
       };
       console.log("level over", data);
       try {
@@ -266,7 +259,7 @@ export class AnkiGameScene extends Phaser.Scene {
       }
       // GameAnalytics.addProgressionEvent(EGAProgressionStatus.Complete,
       //   this.language, "level" + this.level, "mistakes" + this.wordsGame.mistakes, Math.floor(durationSeconds));
-      this.scene.start(levelDoneSceneKey, data);
+      this.scene.start(ankiDoneSceneKey, data);
     } else {
       this.updateWordButtons();
     }

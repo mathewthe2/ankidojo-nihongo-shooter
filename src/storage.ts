@@ -12,7 +12,24 @@ function bestSpeedKey(lang: string, level: number) {
   return lang + "-best-speed-" + level;
 }
 
+function bestAnkiSpeedKey(deckName: string, deckSize: number) {
+  return  deckName + "-best-speed-" + deckSize;
+}
+
 export const storage = {
+  bestAnkiSpeed: {
+    get(deckName: string, deckSize: number) {
+      const value = localStorage.getItem(bestAnkiSpeedKey(deckName, deckSize));
+      if (value) {
+        return +value;
+      } else {
+        return undefined;
+      }
+    },
+    set(deckName: string, deckSize: number, value: number) {
+      localStorage.setItem(bestAnkiSpeedKey(deckName, deckSize), value.toString());
+    }
+  },
   bestSpeed: {
     get(lang: string, level: number) {
       const value = localStorage.getItem(bestSpeedKey(lang, level));

@@ -60,16 +60,17 @@ export class AnkiWordGame {
   corrects = 0;
   mistakes = 0;
 
-  constructor(ankiNotes: AnkiNote[], level: number) {
-    this.level = level || 1;
+  constructor(ankiNotes: AnkiNote[], deckSize: number) {
+    // this.level = level || 1;
     init(ankiNotes);
 
     // `Math.floor` here guarantees we'll have wordCount of words each level
     // though we might skip the last few words. Not a problem because the list
     // is sorted by word popularity.
-    const wordCount = Math.floor(globalWords.length / maxLevel);
-    const firstIndex = (level - 1) * wordCount;
-    this.learningWords = globalWords.slice(firstIndex, firstIndex + wordCount);
+    // const wordCount = Math.floor(globalWords.length / maxLevel);
+    // const firstIndex = (level - 1) * wordCount;
+    // this.learningWords = globalWords.slice(firstIndex, firstIndex + wordCount);
+    this.learningWords = globalWords.slice(0, deckSize);
     shuffle(this.learningWords);
     console.log("globalWords", globalWords)
     console.log("learningwords", this.learningWords)
