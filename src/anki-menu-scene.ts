@@ -15,6 +15,8 @@ export interface AnkiMenuSceneProps {
   deckName: string;
 }
 
+const QUESTION_NUMBER_OPTIONS = [10, 20, 30, 50, 70, 100];
+
 // Select Anki Deck
 export class AnkiMenuScene extends Phaser.Scene {
   private background = new Background();
@@ -22,7 +24,7 @@ export class AnkiMenuScene extends Phaser.Scene {
   private stuff: Stuff[] = [this.background, this.backButton];
   private deckNames: string[] = [];
   private selectedDeckName: string = '';
-  private deckSize: number = 10;
+  private deckSize: number = QUESTION_NUMBER_OPTIONS[0];
   private ankiNotes: AnkiNote[] = [];
   private isLoadingNotes: boolean = true;
 
@@ -39,7 +41,7 @@ export class AnkiMenuScene extends Phaser.Scene {
       getPrimaryDeck().then((primaryDeck)=>{
         this.createDeckNameSelect(this.deckNames, primaryDeck);
         this.createQuestionNumberSelect();
-        getNotes(primaryDeck).then(notes=>{
+        getNotes(primaryDeck, this.deckSize).then(notes=>{
           this.ankiNotes = notes['data'];
           this.selectedDeckName = primaryDeck;
           this.isLoadingNotes = false;
@@ -48,17 +50,33 @@ export class AnkiMenuScene extends Phaser.Scene {
     });
   }
 
-  loadNotes(event: Event): void {
+  loadNotes(deckName: string, deckSize: number): void {
     this.isLoadingNotes = true;
-    getNotes((event.target as HTMLInputElement).value).then(notes=>{
+    getNotes(deckName, deckSize).then(notes=>{
       this.ankiNotes = notes['data'];
-      this.selectedDeckName = (event.target as HTMLInputElement).value;
+      this.selectedDeckName = deckName;
+      this.deckSize = deckSize;
       this.isLoadingNotes = false;
     });
   }
 
+  onSelectDeckName(event: Event): void {
+    this.loadNotes((event.target as HTMLInputElement).value, this.deckSize);
+  }
+
+  onSelectDeckSize(event: Event): void {
+    const selectedSize:number = parseInt((event.target as HTMLInputElement).value, 10);
+    if (selectedSize >= 3) {
+      if (selectedSize > this.ankiNotes.length) {
+        this.loadNotes(this.selectedDeckName, selectedSize);
+      } else {
+        this.deckSize = selectedSize;
+      }
+    }
+  }
+
   createDeckNameSelect(deckNames: string[], selected: string): void {
-    let dropdown = this.add.dom(
+    let deckNameSelect = this.add.dom(
       gameWidth / 2,
       gameHeight / 5,
       "select",
@@ -66,7 +84,7 @@ export class AnkiMenuScene extends Phaser.Scene {
       "Phaser"
     );
     // dropdown.node.onchange = event => deckNames[select.selectedIndex];
-    dropdown.node.addEventListener("change", (e:Event)=>this.loadNotes(e));
+    deckNameSelect.node.addEventListener("change", (e:Event)=>this.onSelectDeckName(e));
     deckNames.forEach((deckName: string) => {
       var opt = document.createElement("option");
       opt.value = deckName;
@@ -74,23 +92,24 @@ export class AnkiMenuScene extends Phaser.Scene {
       if (selected && deckName === selected) {
         opt.selected = true;
       }
-      dropdown.node.appendChild(opt);
+      deckNameSelect.node.appendChild(opt);
     });
   }
   
   createQuestionNumberSelect(): void {
-    let dropdown = this.add.dom(
+    let questionNumberSelect = this.add.dom(
         gameWidth / 2,
         gameHeight / 3.5,
         "select",
         "font-size: 2em; width: 50%; height:5%",
         "Phaser"
       );
-      [10, 20, 50, 100].forEach((numberOfQuestions: number) => {
+      questionNumberSelect.node.addEventListener("change", (e:Event)=>this.onSelectDeckSize(e));
+      QUESTION_NUMBER_OPTIONS.forEach((numberOfQuestions: number) => {
         var opt = document.createElement("option");
         opt.value = numberOfQuestions.toString();
         opt.innerHTML = numberOfQuestions.toString();
-        dropdown.node.appendChild(opt);
+        questionNumberSelect.node.appendChild(opt);
       });
   }
 

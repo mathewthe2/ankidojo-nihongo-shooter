@@ -20,8 +20,14 @@ const fetchAnki = async (endpoint: string, isJson: boolean = true) => {
   }
 };
 
-export const getNotes = async(deckName: string) => {
-    const noteData = await fetchAnki(`notes?shuffle=true&deck_name=${deckName}`)
+export const getNotes = async(deckName: string, size: number) => {
+  const searchObject:Record<string, string> = {
+    'deck_name': deckName,
+    'shuffle': 'true',
+    'limit': size.toString()
+  }
+    const searchParams =  new URLSearchParams(searchObject).toString();
+    const noteData = await fetchAnki(`notes?${searchParams}`)
     const data:AnkiNote[] = noteData.data.map((note:any) => {
       return {
         ...note,
