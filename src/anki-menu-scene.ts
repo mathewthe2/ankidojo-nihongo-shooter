@@ -113,9 +113,6 @@ export class AnkiMenuScene extends Phaser.Scene {
     startButton.setXY(x, y);
 
     startButton.onPress = () => {
-      // const sceneInfo: AnkiMenuSceneProps = {
-      //   deckName: '',
-      // };
       const sceneInfo: AnkiGameSceneProps = {
         showHint: false,
         ankiNotes: this.ankiNotes,

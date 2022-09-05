@@ -1,5 +1,6 @@
 import 'phaser';
 import particleUrl from '../assets/particle.png';
+import backButtonUrl from '../assets/back.png';
 import gaspUrl from '../assets/gasp.mp3';
 import { Background } from './fx-background';
 import { Stuff } from './stuff';
@@ -9,10 +10,10 @@ import { gameHeight, gameWidth } from './config';
 import { storage } from './storage';
 import { gameSceneKey, GameSceneProps } from './game-scene';
 import { addText } from './utils';
-// import { ImageButton } from './image-button';
-// import { languageSelectSceneKey } from './language-select-scene';
+import { ImageButton } from './image-button';
 import { UI, uiNameToFrame } from './fx-ui';''
 import { whichStarFrame } from './scoring';
+import { gameSelectSceneKey } from './game-mode-select-scene';
 
 export const menuSceneKey = 'MenuScene';
 
@@ -24,9 +25,11 @@ export class MenuScene extends Phaser.Scene {
   private isHintOn = true;
   private startKey!: Phaser.Input.Keyboard.Key;
   private background = new Background();
+  private backButton = new ImageButton('back-button', backButtonUrl);
   private ui = new UI();
   private stuff: Stuff[] = [
     this.background,
+    this.backButton,
     this.ui,
   ];
   private buttons!: AnswerButton[];
@@ -66,6 +69,10 @@ export class MenuScene extends Phaser.Scene {
 
   create(): void {
     this.stuff.map(thing => thing.create(this));
+    this.backButton.setXY(gameWidth * 0.04, gameHeight * 0.02);
+    this.backButton.onPress = () => {
+      this.scene.start(gameSelectSceneKey);
+    };
     this.buttons = [];
 
     if (this.language === 'japanese') {
