@@ -1,8 +1,10 @@
+import particleUrl from "../assets/particle.png";
+import backButtonUrl from "../assets/back.png";
+import gaspUrl from "../assets/gasp.mp3";
 import { Background } from "./fx-background";
 import { Stuff } from "./stuff";
-import backButtonUrl from '../assets/back.png';
 import { addText } from "./utils";
-import { ImageButton } from './image-button';
+import { ImageButton } from "./image-button";
 import { gameHeight, gameWidth } from "./config";
 import { AnswerButton } from "./answer-button";
 import { getDeckNames, getPrimaryDeck, getNotes } from "./anki";
@@ -15,18 +17,35 @@ export interface AnkiMenuSceneProps {
   deckName: string;
 }
 
+const MIN_QUESTION_NUMBER = 3;
 const QUESTION_NUMBER_OPTIONS = [10, 20, 30, 50, 70, 100];
+
+interface EaseOption {
+  Easy: string;
+  Normal: string;
+  Hard: string;
+  Random: string | null;
+}
+const EASE_OPTIONS = {
+  Easy: "prop:ease>=3",
+  Normal: "prop:ease>=1.5 prop:ease<3",
+  Hard: "prop:ease<1.5",
+  Random: null,
+} as EaseOption;
 
 // Select Anki Deck
 export class AnkiMenuScene extends Phaser.Scene {
   private background = new Background();
-  private backButton = new ImageButton('back-button', backButtonUrl);
+  private buttons!: AnswerButton[];
+  private backButton = new ImageButton("back-button", backButtonUrl);
+  private startKey!: Phaser.Input.Keyboard.Key;
   private stuff: Stuff[] = [this.background, this.backButton];
   private deckNames: string[] = [];
-  private selectedDeckName: string = '';
+  private selectedDeckName: string = "";
   private deckSize: number = QUESTION_NUMBER_OPTIONS[0];
   private ankiNotes: AnkiNote[] = [];
   private isLoadingNotes: boolean = true;
+  private difficulty: keyof EaseOption = "Random";
 
   constructor() {
     super({
@@ -36,42 +55,107 @@ export class AnkiMenuScene extends Phaser.Scene {
 
   preload(): void {
     this.stuff.map((thing) => thing.preload(this));
+    this.startKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.S
+    );
+    this.startKey.isDown = false;
+    this.load.image("particle", particleUrl);
+    this.load.audio("gasp", gaspUrl);
     getDeckNames().then((deckNames) => {
       this.deckNames = deckNames.sort();
-      getPrimaryDeck().then((primaryDeck)=>{
+      getPrimaryDeck().then((primaryDeck) => {
         this.createDeckNameSelect(this.deckNames, primaryDeck);
         this.createQuestionNumberSelect();
-        getNotes(primaryDeck, this.deckSize).then(notes=>{
-          this.ankiNotes = notes['data'];
-          this.selectedDeckName = primaryDeck;
-          this.isLoadingNotes = false;
+        this.loadNotes({
+          deckName: primaryDeck,
+          deckSize: this.deckSize,
+          difficulty: this.difficulty,
         });
       });
     });
   }
 
-  loadNotes(deckName: string, deckSize: number): void {
+  isReady(): boolean {
+    return (
+      this.ankiNotes.length === this.deckSize &&
+      this.deckSize >= MIN_QUESTION_NUMBER &&
+      !this.isLoadingNotes
+    );
+  }
+
+  loadNotes({
+    deckName,
+    deckSize,
+    difficulty,
+    onFinishedLoading,
+  }: {
+    deckName: string;
+    deckSize: number;
+    difficulty: keyof EaseOption;
+    onFinishedLoading?: () => void;
+  }): void {
     this.isLoadingNotes = true;
-    getNotes(deckName, deckSize).then(notes=>{
-      this.ankiNotes = notes['data'];
+    getNotes(deckName, deckSize, EASE_OPTIONS[difficulty]).then((notes) => {
+      this.ankiNotes = notes["data"];
       this.selectedDeckName = deckName;
       this.deckSize = deckSize;
       this.isLoadingNotes = false;
+      if (onFinishedLoading) {
+        onFinishedLoading();
+      }
     });
   }
 
   onSelectDeckName(event: Event): void {
-    this.loadNotes((event.target as HTMLInputElement).value, this.deckSize);
+    this.loadNotes({
+      deckName: (event.target as HTMLInputElement).value,
+      deckSize: this.deckSize,
+      difficulty: this.difficulty,
+    });
   }
 
   onSelectDeckSize(event: Event): void {
-    const selectedSize:number = parseInt((event.target as HTMLInputElement).value, 10);
-    if (selectedSize >= 3) {
+    const selectedSize: number = parseInt(
+      (event.target as HTMLInputElement).value,
+      10
+    );
+    if (selectedSize >= MIN_QUESTION_NUMBER) {
       if (selectedSize > this.ankiNotes.length) {
-        this.loadNotes(this.selectedDeckName, selectedSize);
+        this.loadNotes({
+          deckName: this.selectedDeckName,
+          deckSize: selectedSize,
+          difficulty: this.difficulty,
+        });
       } else {
         this.deckSize = selectedSize;
       }
+    }
+  }
+
+  onClickStart(difficultyText: keyof EaseOption): void {
+    if (difficultyText === this.difficulty) {
+      this.startGame();
+    } else {
+      this.loadNotes({
+        deckName: this.selectedDeckName,
+        deckSize: this.deckSize,
+        difficulty: difficultyText,
+        onFinishedLoading: () => this.startGame(),
+      });
+    }
+  }
+
+  startGame(): void {
+    this.sound.play("gasp");
+    const sceneInfo: AnkiGameSceneProps = {
+      showHint: false,
+      ankiNotes: this.ankiNotes,
+      deckName: this.selectedDeckName,
+      deckSize: this.deckSize,
+      difficulty: this.difficulty,
+    };
+    if (this.isReady()) {
+      this.scene.start(ankiGameSceneKey, sceneInfo);
     }
   }
 
@@ -83,8 +167,9 @@ export class AnkiMenuScene extends Phaser.Scene {
       "font-size: 2em; width: 50%; height:5%",
       "Phaser"
     );
-    // dropdown.node.onchange = event => deckNames[select.selectedIndex];
-    deckNameSelect.node.addEventListener("change", (e:Event)=>this.onSelectDeckName(e));
+    deckNameSelect.node.addEventListener("change", (e: Event) =>
+      this.onSelectDeckName(e)
+    );
     deckNames.forEach((deckName: string) => {
       var opt = document.createElement("option");
       opt.value = deckName;
@@ -95,60 +180,64 @@ export class AnkiMenuScene extends Phaser.Scene {
       deckNameSelect.node.appendChild(opt);
     });
   }
-  
+
   createQuestionNumberSelect(): void {
     let questionNumberSelect = this.add.dom(
-        gameWidth / 2,
-        gameHeight / 3.5,
-        "select",
-        "font-size: 2em; width: 50%; height:5%",
-        "Phaser"
-      );
-      questionNumberSelect.node.addEventListener("change", (e:Event)=>this.onSelectDeckSize(e));
-      QUESTION_NUMBER_OPTIONS.forEach((numberOfQuestions: number) => {
-        var opt = document.createElement("option");
-        opt.value = numberOfQuestions.toString();
-        opt.innerHTML = numberOfQuestions.toString();
-        questionNumberSelect.node.appendChild(opt);
-      });
+      gameWidth / 2,
+      gameHeight / 3.5,
+      "select",
+      "font-size: 2em; width: 50%; height:5%",
+      "Phaser"
+    );
+    questionNumberSelect.node.addEventListener("change", (e: Event) =>
+      this.onSelectDeckSize(e)
+    );
+    QUESTION_NUMBER_OPTIONS.forEach((numberOfQuestions: number) => {
+      var opt = document.createElement("option");
+      opt.value = numberOfQuestions.toString();
+      opt.innerHTML = numberOfQuestions.toString();
+      questionNumberSelect.node.appendChild(opt);
+    });
   }
 
   create(): void {
+    this.buttons = [];
     this.stuff.map((thing) => thing.create(this));
     const title = addText(this, gameWidth / 8, gameHeight / 5, "Select Deck");
     title.setFontSize(0.02 * gameHeight);
     title.setOrigin(0.5);
 
-    const questionSelectLabel = addText(this, gameWidth / 7, gameHeight / 3.5, "Questions");
+    const questionSelectLabel = addText(
+      this,
+      gameWidth / 7,
+      gameHeight / 3.5,
+      "Questions"
+    );
     questionSelectLabel.setFontSize(0.02 * gameHeight);
     questionSelectLabel.setOrigin(0.5);
 
-    const columnCount = 1;
-    const startButton = new AnswerButton(this);
-    startButton.width = 400;
-    startButton.setText("Start");
-    let x = ((5.04 + 3.4 * (1 % columnCount)) * gameWidth) / 10;
-    let y = ((2.4 + 2 * Math.floor(1 / columnCount)) * gameHeight) / 10;
-    startButton.setXY(x, y);
+    for (let index = 0; index < Object.keys(EASE_OPTIONS).length; index++) {
+      const difficultyText = Object.keys(EASE_OPTIONS)[index];
+      const button = new AnswerButton(this);
+      button.width = gameWidth * 0.35;
+      const columnCount = 1;
+      this.buttons.push(button);
+      button.setText("" + difficultyText);
+      const x = ((5.0 + 1.4 * (index % columnCount)) * gameWidth) / 10;
+      const y =
+        ((4.0 + 1.2 * Math.floor(index / columnCount)) * gameHeight) / 10;
+      button.setXY(x, y);
+      button.onPress = () =>
+        this.onClickStart(difficultyText as keyof EaseOption);
+    }
 
-    startButton.onPress = () => {
-      const sceneInfo: AnkiGameSceneProps = {
-        showHint: false,
-        ankiNotes: this.ankiNotes,
-        deckName: this.selectedDeckName,
-        deckSize: this.deckSize
-      };
-      if (!this.isLoadingNotes) {
-        this.scene.start(ankiGameSceneKey, sceneInfo);
-      }
-    };
-
-    this.backButton.setXY(this.game.scale.width * 0.01, 0.034 * this.game.scale.height);
+    this.backButton.setXY(
+      this.game.scale.width * 0.01,
+      0.034 * this.game.scale.height
+    );
     this.backButton.onPress = () => {
       this.scene.start(gameSelectSceneKey);
     };
-
-
   }
 
   update(): void {
