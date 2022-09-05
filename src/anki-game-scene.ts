@@ -22,6 +22,7 @@ import { TimerBar } from './fx-timer-bar';
 import { Planet } from './fx-planet';
 import { medalTimeSeconds } from './scoring';
 import AnkiNote from './ankiNote';
+import { ankiMenuSceneKey } from './anki-menu-scene';
 
 export const ankiGameSceneKey = 'AnkiGameScene';
 
@@ -149,7 +150,7 @@ export class AnkiGameScene extends Phaser.Scene {
     this.backButton.setXY(this.game.scale.width * 0.01, 0.034 * this.game.scale.height);
     this.backButton.onPress = () => {
       // GameAnalytics.addProgressionEvent(EGAProgressionStatus.Fail, this.language, "level" + this.level);
-      this.scene.start(menuSceneKey);
+      this.scene.start(ankiMenuSceneKey);
     };
 
     this.scoreText = addText(this, 0, 0, 'HP: 100');

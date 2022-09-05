@@ -1,11 +1,14 @@
 import { Background } from "./fx-background";
 import { Stuff } from "./stuff";
+import backButtonUrl from '../assets/back.png';
 import { addText } from "./utils";
+import { ImageButton } from './image-button';
 import { gameHeight, gameWidth } from "./config";
 import { AnswerButton } from "./answer-button";
 import { getDeckNames, getPrimaryDeck, getNotes } from "./anki";
 import { ankiGameSceneKey, AnkiGameSceneProps } from "./anki-game-scene";
 import AnkiNote from "./ankiNote";
+import { gameSelectSceneKey } from "./game-mode-select-scene";
 
 export const ankiMenuSceneKey = "AnkiMenuScene";
 export interface AnkiMenuSceneProps {
@@ -15,7 +18,8 @@ export interface AnkiMenuSceneProps {
 // Select Anki Deck
 export class AnkiMenuScene extends Phaser.Scene {
   private background = new Background();
-  private stuff: Stuff[] = [this.background];
+  private backButton = new ImageButton('back-button', backButtonUrl);
+  private stuff: Stuff[] = [this.background, this.backButton];
   private deckNames: string[] = [];
   private ankiNotes: AnkiNote[] = [];
   private isLoadingNotes: boolean = true;
@@ -53,7 +57,7 @@ export class AnkiMenuScene extends Phaser.Scene {
   createDeckNameSelect(deckNames: string[], selected: string): void {
     let dropdown = this.add.dom(
       gameWidth / 2,
-      gameHeight / 20,
+      gameHeight / 5,
       "select",
       "font-size: 2em; width: 50%; height:5%",
       "Phaser"
@@ -74,7 +78,7 @@ export class AnkiMenuScene extends Phaser.Scene {
   createQuestionNumberSelect(): void {
     let dropdown = this.add.dom(
         gameWidth / 2,
-        gameHeight /5,
+        gameHeight / 3.5,
         "select",
         "font-size: 2em; width: 50%; height:5%",
         "Phaser"
@@ -89,11 +93,11 @@ export class AnkiMenuScene extends Phaser.Scene {
 
   create(): void {
     this.stuff.map((thing) => thing.create(this));
-    const title = addText(this, gameWidth / 8, gameHeight / 20, "Select Deck");
+    const title = addText(this, gameWidth / 8, gameHeight / 5, "Select Deck");
     title.setFontSize(0.02 * gameHeight);
     title.setOrigin(0.5);
 
-    const questionSelectLabel = addText(this, gameWidth / 8, gameHeight / 5, "Questions");
+    const questionSelectLabel = addText(this, gameWidth / 7, gameHeight / 3.5, "Questions");
     questionSelectLabel.setFontSize(0.02 * gameHeight);
     questionSelectLabel.setOrigin(0.5);
 
@@ -118,6 +122,12 @@ export class AnkiMenuScene extends Phaser.Scene {
         this.scene.start(ankiGameSceneKey, sceneInfo);
       }
     };
+
+    this.backButton.setXY(this.game.scale.width * 0.01, 0.034 * this.game.scale.height);
+    this.backButton.onPress = () => {
+      this.scene.start(gameSelectSceneKey);
+    };
+
 
   }
 
