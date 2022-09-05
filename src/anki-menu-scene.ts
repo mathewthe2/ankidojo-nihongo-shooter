@@ -35,7 +35,9 @@ const EASE_OPTIONS = {
 
 // Select Anki Deck
 export class AnkiMenuScene extends Phaser.Scene {
+  private isHintOn = false;
   private background = new Background();
+  private hintToggle!: AnswerButton;
   private buttons!: AnswerButton[];
   private backButton = new ImageButton("back-button", backButtonUrl);
   private startKey!: Phaser.Input.Keyboard.Key;
@@ -81,6 +83,14 @@ export class AnkiMenuScene extends Phaser.Scene {
       this.deckSize >= MIN_QUESTION_NUMBER &&
       !this.isLoadingNotes
     );
+  }
+
+  updateHintToggle() {
+    if (this.isHintOn) {
+      this.hintToggle.setText("Hiragana is on");
+    } else {
+      this.hintToggle.setText("Hiragana is off");
+    }
   }
 
   loadNotes({
@@ -148,7 +158,7 @@ export class AnkiMenuScene extends Phaser.Scene {
   startGame(): void {
     this.sound.play("gasp");
     const sceneInfo: AnkiGameSceneProps = {
-      showHint: false,
+      showHint: this.isHintOn,
       ankiNotes: this.ankiNotes,
       deckName: this.selectedDeckName,
       deckSize: this.deckSize,
@@ -201,11 +211,19 @@ export class AnkiMenuScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.buttons = [];
     this.stuff.map((thing) => thing.create(this));
     const title = addText(this, gameWidth / 8, gameHeight / 5, "Select Deck");
     title.setFontSize(0.02 * gameHeight);
     title.setOrigin(0.5);
+
+    this.buttons = [];
+    this.hintToggle = new AnswerButton(this);
+    this.hintToggle.setXY(gameWidth / 2, gameHeight * 0.95);
+    this.updateHintToggle();
+    this.hintToggle.onPress = () => {
+      this.isHintOn = !this.isHintOn;
+      this.updateHintToggle();
+    };
 
     const questionSelectLabel = addText(
       this,
