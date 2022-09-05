@@ -21,7 +21,7 @@ const fetchAnki = async (endpoint: string, isJson: boolean = true) => {
 };
 
 export const getNotes = async(deckName: string) => {
-    const noteData = await fetchAnki(`notes?deck_name=${deckName}`)
+    const noteData = await fetchAnki(`notes?shuffle=true&deck_name=${deckName}`)
     const data:AnkiNote[] = noteData.data.map((note:any) => {
       return {
         ...note,
