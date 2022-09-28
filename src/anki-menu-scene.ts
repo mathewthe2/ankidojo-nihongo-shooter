@@ -17,7 +17,7 @@ export interface AnkiMenuSceneProps {
   deckName: string;
 }
 
-const MIN_QUESTION_NUMBER = 3;
+const MIN_QUESTION_NUMBER = 4;
 const QUESTION_NUMBER_OPTIONS = [10, 20, 30, 50, 70, 100];
 
 interface EaseOption {
@@ -80,7 +80,8 @@ export class AnkiMenuScene extends Phaser.Scene {
   isReady(): boolean {
     return (
       this.deckSize >= MIN_QUESTION_NUMBER &&
-      !this.isLoadingNotes
+      !this.isLoadingNotes &&
+      this.ankiNotes.length >= MIN_QUESTION_NUMBER
     );
   }
 
@@ -107,7 +108,8 @@ export class AnkiMenuScene extends Phaser.Scene {
     getNotes(deckName, deckSize, EASE_OPTIONS[difficulty]).then((notes) => {
       this.ankiNotes = notes["data"];
       this.selectedDeckName = deckName;
-      // console.log('deckSize', deckSize)
+      console.log('deckname', deckName)
+      console.log('notes', notes['data'])
       // console.log('length', this.ankiNotes.length)
       if (this.ankiNotes.length < deckSize) {
         for (let i = 0; i < QUESTION_NUMBER_OPTIONS.length-1; i++) {
@@ -156,10 +158,11 @@ export class AnkiMenuScene extends Phaser.Scene {
     if (difficultyText === this.difficulty) {
       this.startGame();
     } else {
+      this.difficulty = difficultyText;
       this.loadNotes({
         deckName: this.selectedDeckName,
         deckSize: this.deckSize,
-        difficulty: difficultyText,
+        difficulty: this.difficulty,
         onFinishedLoading: () => this.startGame(),
       });
     }
@@ -175,8 +178,11 @@ export class AnkiMenuScene extends Phaser.Scene {
       deckSize: this.deckSize,
       difficulty: this.difficulty,
     };
+    console.log('dffic', this.difficulty)
     if (this.isReady()) {
       this.scene.start(ankiGameSceneKey, sceneInfo);
+    } else if (this.ankiNotes.length < MIN_QUESTION_NUMBER) {
+      alert(`Not enough cards ${this.ankiNotes.length} given but at least ${MIN_QUESTION_NUMBER} is required.`)
     }
   }
 
