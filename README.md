@@ -1,17 +1,14 @@
-## Play now
+## Nihongo Shooter+
 
-Play at https://ubershmekel.github.io/nihongo-shooter/
+Anki Dojo is required to play this.
 
-## Nihongo Shooter
+https://user-images.githubusercontent.com/13146030/188549287-67e5ab0f-f3ed-4371-aa9a-de448b385f02.mp4
 
-The idea here is a game where you learn Japanese, but everything feels snappy.
-Learning games often have slow animations with a lot of downtime where you're
-not learning.
+## Features
+- Difficulty based on Anki ease values.
+- Custom card number. 
+- High scores for each difficulty, deck, and card number.
 
-## Credits
+## Acknowledgements
 
-* Japanese words list [posted by u/Maiqswaterwalking](https://www.reddit.com/r/japanese/comments/g87bn7/top_1000_japanese_words_kanji_romaji_english/), [hiraganafied by u/EmergencyDoctorMaria](https://pastebin.com/3BgbvHfT), cleaned by u/ubershmekel.
-* explosion.png - Lunar Lander Upload https://mattwalkden.itch.io
-* ship-01.png, rays.png, space-debris.png, enemies.png, explosion2.png - https://ansimuz.itch.io/patreons-top-down-collection, lol why the strange spritesheet size for the debris.
-* Planets - https://deep-fold.itch.io/pixel-planet-generator
-
+Nihongo Shooter is originally developed by [Yuval Greenfield](https://github.com/ubershmekel).
